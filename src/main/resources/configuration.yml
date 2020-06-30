@@ -1,0 +1,166 @@
+#   ▄█  ███▄▄▄▄      ▄████████  ▄█       ███    █▄     ▄████████ ███▄▄▄▄    ▄████████    ▄████████    ▄████████    ▄████████
+#  ███  ███▀▀▀██▄   ███    ███ ███       ███    ███   ███    ███ ███▀▀▀██▄ ███    ███   ███    ███   ███    ███   ███    ███
+#  ███▌ ███   ███   ███    █▀  ███       ███    ███   ███    █▀  ███   ███ ███    █▀    ███    █▀    ███    ███   ███    █▀
+#  ███▌ ███   ███  ▄███▄▄▄     ███       ███    ███  ▄███▄▄▄     ███   ███ ███         ▄███▄▄▄      ▄███▄▄▄▄██▀   ███
+#  ███▌ ███   ███ ▀▀███▀▀▀     ███       ███    ███ ▀▀███▀▀▀     ███   ███ ███        ▀▀███▀▀▀     ▀▀███▀▀▀▀▀   ▀███████████
+#  ███  ███   ███   ███        ███       ███    ███   ███    █▄  ███   ███ ███    █▄    ███    █▄  ▀███████████          ███
+#  ███  ███   ███   ███        ███▌    ▄ ███    ███   ███    ███ ███   ███ ███    ███   ███    ███   ███    ███    ▄█    ███
+#  █▀    ▀█   █▀    ███        █████▄▄██ ████████▀    ██████████  ▀█   █▀  ████████▀    ██████████   ███    ███  ▄████████▀
+#                              ▀                                                                     ███    ███
+#                             ___  _________________  ___  ___    ________  ____  __  _____
+#                            / _ \/  _/ __/ ___/ __ \/ _ \/ _ \  / ___/ _ \/ __ \/ / / / _ \
+#                           / // // /_\ \/ /__/ /_/ / , _/ // / / (_ / , _/ /_/ / /_/ / ___/
+#                          /____/___/___/\___/\____/_/|_/____/  \___/_/|_|\____/\____/_/
+#
+#                                              Join to receive SUPPORT.
+#                                             https://discord.gg/uxRTwDa
+
+# General configuration. All of these are optional and do not require to be changed for plugin to work.
+# Edit only if you know what are you doing.
+general:
+    # Setting that allows you to enable or disable debug mode.
+    # Consider enabling it if you are encountering any issues with the plugin.
+    debug-mode-enabled: false
+    # Setting that allows you to enable or disable metrics.
+    metrics-enabled: true
+    # Setting that allows you to change time zone the plugin should use when formatting time.
+    # +0 = UTC.
+    # +1 = UTC +1 hour.
+    # -1 = UTC -1 hour.
+    # +130 = UTC + 1 hour + 30 minutes.
+    # -130 = UTC - 1 hour - 30 minutes.
+    time-zone: "+0"
+    # Setting that allows you to change time format that is used when formatting time.
+    # A list of the most common pattern leters you can use:
+    # y = year (yy or yyyy)
+    # M = month (MM)
+    # d = day in month (dd)
+    # h = hour (12-hour clock format) (hh)
+    # H = hour (24-hour clock format) (HH)
+    # m = minute in hour (mm)
+    # s = seconds (ss)
+    # S = milliseconds (SSS)
+    time-format: "yyyy-MM-dd HH:mm:ss"
+    # Setting that allows you to enable or disable saving users on plugin disable.
+    # With a lot of users this may slow down the server disabling process.
+    # Users are also saved each time they leave the server (both normally or by getting kicked from it).
+    save-users-on-plugin-disable: true
+    # To prevent bots from creating user-related files, players have to spend at least 2 minutes (by default)
+    # on the server without leaving it to have their progress saved to a file.
+    # If the save gets activated at least once after passing the provided time, this setting will no longer be checked for that user.
+    # If user leaves the server before the provided time passes at least once, their progress will not be saved.
+    # The time is provided in milliseconds.
+    user-safe-to-save-delay: 120000
+    # Settings regarding automatic users updating.
+    users-update:
+        # Setting that allows you to change time after which the plugin will start updating users.
+        # 20 = 1 second.
+        # 6000 = 5 minutes.
+        delay: 6000
+        # Setting that allows you to change time every which the plugin will update users.
+        # 20 = 1 second.
+        # 6000 = 5 minutes.
+        period: 6000
+
+# Settings regarding YouTube service.
+youtube:
+    # Setting that allows you to specifically disable this service.
+    enabled: true
+    # Setting that allows you to set API key that this plugin will use to communicate with this service.
+    api-key: ""
+    # Setting that allows you to change time the retrieved information are cached for.
+    # 1000 - 1 second.
+    # 600000 - 10 minutes.
+    cache-time: 600000
+    # Settings regarding available ranks.
+    # IMPORTANT: Ranks must be indexed from the worst one (no rank) to the best one.
+    # IMPORTANT: The first rank has to be a no rank (a rank that does not have any requirements for it).
+    ranks:
+        # The id of this rank (has to be unique).
+        norank:
+            # The name of this rank.
+            name: "No Rank"
+            # The minimal needed amount of subscribers.
+            # If set to 0 or below, this requirement will be ignored.
+            subscribers: 0
+            # The minimal needed amount of total views.
+            # If set to 0 or below, this requirement will be ignored.
+            total-views: 0
+            # The minimal needed amount of average views.
+            # If set to 0 or below, this requirement will be ignored.
+            average-views: 0
+            # The conditions regarding last videos.
+            # At least one of the 5 last videos has to meet requirements below.
+            last-videos-conditions:
+                # The maximum amount of time the channel does not have to publish a new video for.
+                # If set to 0 or below, this requirement will be ignored.
+                # 1000 - 1 second.
+                # 60000 - 1 minute.
+                publish-time: 0
+                # The words title has to contain.
+                # The title has to contain at least one of the words set below.
+                # If empty, this requirement will be ignored.
+                title-contains: []
+                # The words description has to contain.
+                # The description has to contain at least one of the words set below.
+                # If empty, this requirement will be ignored.
+                description-contains: []
+            # A list of commands that will be executed when the player receives this rank.
+            commands:
+                - "permissions user {player} parent remove YouTuber"
+                - "permissions user {player} parent remove MiniYouTuber"
+        miniyoutuber:
+            name: "Mini YouTuber"
+            subscribers: 500
+            total-views: 5000
+            average-views: 120
+            last-videos-conditions:
+                publish-time: 604800000
+                title-contains:
+                    - "my-server.ip"
+                description-contains:
+                    - "my-server.ip"
+                    - "myserver.ip"
+            commands:
+                - "permissions user {player} parent remove YouTuber"
+                - "permissions user {player} parent add MiniYouTuber"
+        youtuber:
+            name: "YouTuber"
+            subscribers: 5000
+            total-views: 50000
+            average-views: 240
+            last-videos-conditions:
+                publish-time: 604800000
+                title-contains:
+                    - "my-server.ip"
+                description-contains:
+                    - "my-server.ip"
+                    - "myserver.ip"
+            commands:
+                - "permissions user {player} parent remove MiniYouTuber"
+                - "permissions user {player} parent add YouTuber"
+
+# Settings regarding Twitch service.
+# Changing any of these settings do not have an impact (due to the Twitch service feature still being work in progress).
+twitch:
+    # Setting that allows you to specifically disable this service.
+    enabled: false
+    # Setting that allows you to set API key that this plugin will use to communicate with this service.
+    api-key: ""
+    # Setting that allows you to change time the retrieved information are cached for.
+    # 1000 - 1 second.
+    # 600000 - 10 minutes.
+    cache-time: 600000
+    # Settings regarding available ranks.
+    # Ranks must be indexed from the worst one (no rank) to the best one.
+    # IMPORTANT: The first rank has to be a no rank (a rank that does not have any requirements for it).
+    ranks: {}
+
+#     ▄████████  ███▄▄▄▄   ████████▄
+#     ███    ███ ███▀▀▀██▄ ███   ▀███
+#     ███    █▀  ███   ███ ███    ███
+#    ▄███▄▄▄     ███   ███ ███    ███
+#   ▀▀███▀▀▀     ███   ███ ███    ███
+#     ███    █▄  ███   ███ ███    ███
+#     ███    ███ ███   ███ ███   ▄███
+#     ██████████  ▀█   █▀  ████████▀

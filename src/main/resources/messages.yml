@@ -1,0 +1,122 @@
+#     ▄▄▄▄███▄▄▄▄      ▄████████    ▄████████    ▄████████    ▄████████    ▄██████▄     ▄████████    ▄████████
+#   ▄██▀▀▀███▀▀▀██▄   ███    ███   ███    ███   ███    ███   ███    ███   ███    ███   ███    ███   ███    ███
+#   ███   ███   ███   ███    █▀    ███    █▀    ███    █▀    ███    ███   ███    █▀    ███    █▀    ███    █▀
+#   ███   ███   ███  ▄███▄▄▄       ███          ███          ███    ███  ▄███         ▄███▄▄▄       ███
+#   ███   ███   ███ ▀▀███▀▀▀     ▀███████████ ▀███████████ ▀███████████ ▀▀███ ████▄  ▀▀███▀▀▀     ▀███████████
+#   ███   ███   ███   ███    █▄           ███          ███   ███    ███   ███    ███   ███    █▄           ███
+#   ███   ███   ███   ███    ███    ▄█    ███    ▄█    ███   ███    ███   ███    ███   ███    ███    ▄█    ███
+#    ▀█   ███   █▀    ██████████  ▄████████▀   ▄████████▀    ███    █▀    ████████▀    ██████████  ▄████████▀
+
+# We believe messages are self explanatory and don't need explaining.
+
+general:
+    not-player: "&7[&bInfluencers&7] &cYou have to be player to do that."
+    no-permission: "&7[&bInfluencers&7] &cYou do not have required permissions to do that."
+    service-disabled: "&7[&bInfluencers&7] &cThis service is currently disabled."
+    help:
+        - "&7[&bInfluencers&7] &fYou are currently using Influencers &av{version} &fby &a{author}&f."
+        - "&7[&bInfluencers&7] &fAll suggestions and/or found issues regarding Influencers should be reported on our Discord server: &ahttps://discord.gg/uxRTwDa&f."
+    service-blacklisted:
+        player: "&7[&bInfluencers&7] &cThis service is currently blacklisted for the specified player and you cannot do that on them."
+        you: "&7[&bInfluencers&7] &cThis service is currently blacklisted for you and you cannot do that."
+
+youtube:
+    help:
+        - "&8&m---------------------------------------------"
+        - ""
+        - "&7» &fAvailable commands:"
+        - ""
+        - " &8» &a/youtube information &7[player] &8- &fViews your or specified player's YouTube channel."
+        - " &8» &a/youtube link &7<channel id> &8- &fLinks YouTube channel."
+        - " &8» &a/youtube unlink &8- &fUnlinks your YouTube channel."
+        - " &8» &a/youtube verify &8- &fVerifies your YouTube channel."
+        - " &8» &a/youtube add &7<player> <channel id> &8- &fLinks and verifies YouTube channel for specified player."
+        - " &8» &a/youtube remove &7<player> &8- &fUnlinks specified player's YouTube channel."
+        - " &8» &a/youtube blacklist &7<player> &8- &fBlacklists specified player."
+        - " &8» &a/youtube unblacklist &7<player> &8- &fUnblacklists specified player."
+        - ""
+        - "&8&m---------------------------------------------"
+    user-no-data:
+        player: "&7[&bInfluencers&7] &cCould not find the specified player's user data. Perhaps they did not play on the server?"
+        you: "&7[&bInfluencers&7] &cCould not find your user data. Rejoin the server and try again."
+    not-linked:
+        player: "&7[&bInfluencers&7] &cThe specified player does not have a YouTube channel linked."
+        you: "&7[&bInfluencers&7] &cYou do not have a YouTube channel linked."
+    not-verified:
+        player: "&7[&bInfluencers&7] &cThe specified player's YouTube channel is not verified."
+        you: "&7[&bInfluencers&7] &cYour YouTube channel is not verified."
+    no-channel-information:
+        player: "&7[&bInfluencers&7] &cThe specified player's YouTube channel information was not retrieved yet."
+        you: "&7[&bInfluencers&7] &cYour YouTube channel information was not retrieved yet."
+    information:
+        - "&8&m-----------------------------------"
+        - ""
+        - " &7» &a{player} &7- &fYouTube channel information"
+        - ""
+        - " &8» &fSubscribers: &a{subscribers}"
+        - " &8» &fVideos: &a{videos}"
+        - " &8» &fTotal views: &a{total_views}"
+        - " &8» &fAverage views: &a{average_views}"
+        - " &8» &fLast video publish time: &a{last_video_publish_time}"
+        - ""
+        - " &8» &fCurrent rank: &a{current_rank}"
+        - ""
+        - "{channel}"
+        - ""
+        - "&8&m-----------------------------------"
+    channel-variable:
+        message: " &7» &fClick to go to &a{player}'s &fYouTube channel &7«"
+        hover: "&fClicking this message will open a page\n&fwith &a{player}'s &fYouTube channel."
+    link-usage: "&7[&bInfluencers&7] &cCorrect usage: /youtube link <channel id>."
+    already-linked-and-verified: "&7[&bInfluencers&7] &cYou already have a YouTube channel linked and verified."
+    already-linked:
+        player: "&7[&bInfluencers&7] &fThe specified player already has a YouTube channel linked."
+        you:
+            - "&8&m---------------------------------------------"
+            - ""
+            - " &fYou already have a YouTube channel linked."
+            - " &fTo &averify &fit, add the &averification key &fto its description."
+            - " &fAfter this is done, run '&a/youtube verify&f' command."
+            - ""
+            - " &fYour &averification key &fis '&a{verification_key}&f'."
+            - ""
+            - "&8&m---------------------------------------------"
+    linked:
+        - "&8&m---------------------------------------------"
+        - ""
+        - " &fYou have successfully linked a YouTube channel."
+        - " &fTo &averify &fit, add the &averification key &fto its description."
+        - " &fAfter this is done, run '&a/youtube verify&f' command."
+        - ""
+        - " &fYour &averification key &fis '&a{verification_key}&f'."
+        - ""
+        - "&8&m---------------------------------------------"
+    unlinked: "&7[&bInfluencers&7] &fYou have &asuccessfully &funlinked your YouTube channel."
+    already-verified: "&7[&bInfluencers&7] &cYour YouTube channel is already verified."
+    verify-error:
+        provided:
+            - "&7[&bInfluencers&7] &cYour YouTube channel could not be verified: {error}."
+            - "&7[&bInfluencers&7] &fYour &averification &fkey is '&a{verification_key}&f'."
+        unknown: "&7[&bInfluencers&7] &cYour YouTube channel could not be verified and the error is unknown."
+    verified: "&7[&bInfluencers&7] &fYour YouTube channel was &asuccessfully &fverified."
+    add-usage: "&7[&bInfluencers&7] &cCorrect usage: /youtube add <player> <channel id>."
+    added: "&7[&bInfluencers&7] &fYou have &alinked &fand &averified &fthe specified YouTube channel for &a{player}&f."
+    remove-usage: "&7[&bInfluencers&7] &cCorrect usage: /youtube remove <player>."
+    removed: "&7[&bInfluencers&7] &fYou have unlinked &a{player}'s &fYouTube channel."
+    blacklist-usage: "&7[&bInfluencers&7] &cCorrect usage: /youtube blacklist <player>."
+    blacklist-unlink-first: "&7[&bInfluencers&7] &cYou have to unlink the specified player's YouTube channel first before trying to blacklist them."
+    blacklisted: "&7[&bInfluencers&7] &fYou have &asuccessfully &fblacklisted the specified player from using this service."
+    unblacklist-usage: "&7[&bInfluencers&7] &cCorrect usage: /youtube unblacklist <player>."
+    unblacklisted: "&7[&bInfluencers&7] &fYou have &asuccessfully &funblacklisted the specified player and they can use this service once again."
+    service-already-blacklisted: "&7[&bInfluencers&7] &cThis service is already blacklisted for the specified player."
+    service-not-blacklisted: "&7[&bInfluencers&7] &cThis service is not blacklisted for the specified player."
+    taken: "&7[&bInfluencers&7] &cThere is already a user who has this YouTube channel id linked."
+
+#     ▄████████  ███▄▄▄▄   ████████▄
+#     ███    ███ ███▀▀▀██▄ ███   ▀███
+#     ███    █▀  ███   ███ ███    ███
+#    ▄███▄▄▄     ███   ███ ███    ███
+#   ▀▀███▀▀▀     ███   ███ ███    ███
+#     ███    █▄  ███   ███ ███    ███
+#     ███    ███ ███   ███ ███   ▄███
+#     ██████████  ▀█   █▀  ████████▀
