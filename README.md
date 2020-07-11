@@ -1,4 +1,4 @@
-YouTubeManager
+Influencers
 =========
 
 Minecraft plugin that allows players to link their YouTube accounts and receive rewards based on their influence.
