@@ -1,5 +1,8 @@
 package dev.jaqobb.influencers.bungee.user;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import dev.arttention.libraries.api.mysql.MySQL;
 import dev.jaqobb.influencers.api.rank.type.YouTubeRank;
 import dev.jaqobb.influencers.api.service.Service;
 import dev.jaqobb.influencers.api.service.ServiceType;
@@ -24,6 +27,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.UUID;
 
+import dev.jaqobb.influencers.bungee.provider.MySQLProvider;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.config.Configuration;
 import net.md_5.bungee.config.ConfigurationProvider;
@@ -120,65 +124,58 @@ public class BungeeUserRepository extends UserRepository {
 
     @Override
     public boolean save(User user) {
-        if (user.getCreatedAt().plusMillis(this.plugin.getConfiguration().getUserSafeToSaveDelay()).compareTo(Instant.now()) > 0) {
-            return false;
+
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.addProperty("name", user.getName());
+
+        // Save blacklisted services
+        JsonObject blacklistedServicesObject = new JsonObject();
+        for (ServiceType serviceType : ServiceType.values()) {
+            blacklistedServicesObject.addProperty(serviceType.getId(), user.hasServiceBlacklisted(serviceType));
         }
-        File file = new File(this.directory, user.getUniqueId() + ".yml");
-        if (file.exists() && !file.delete()) {
-            this.plugin.debug("Could not delete \"" + user.getUniqueId() + ".yml\" user file.");
-            return true;
-        }
-        try {
-            if (!file.createNewFile()) {
-                this.plugin.debug("Could not create \"" + user.getUniqueId() + ".yml\" user file.");
-                return true;
-            }
-        } catch (IOException exception) {
-            this.plugin.debug("Could not create \"" + user.getUniqueId() + ".yml\" user file.", exception);
-            return true;
-        }
-        try {
-            Configuration configuration = ConfigurationProvider.getProvider(YamlConfiguration.class).load(file);
-            configuration.set("name", user.getName());
-            for (ServiceType serviceType : ServiceType.values()) {
-                configuration.getSection("blacklisted-services").set(serviceType.getId(), user.hasServiceBlacklisted(serviceType));
-            }
-            for (Entry<ServiceType, Service> entry : user.getServices().entrySet()) {
-                ServiceType serviceType = entry.getKey();
-                Configuration serviceConfiguration = configuration.getSection("services").getSection(serviceType.getId());
-                if (serviceType == ServiceType.YOUTUBE) {
-                    YouTubeService service = (YouTubeService) entry.getValue();
-                    serviceConfiguration.set("last-cache-time", service.getLastCacheTime().toEpochMilli());
-                    serviceConfiguration.set("channel-id", service.getChannelId());
-                    serviceConfiguration.set("channel-verification-key", service.getChannelVerificationKey());
-                    serviceConfiguration.set("channel-verified", service.isChannelVerified());
-                    if (service.isChannelVerified()) {
-                        Channel channel = service.getChannel();
-                        Configuration channelConfiguration = serviceConfiguration.getSection("channel");
-                        channelConfiguration.set("name", channel.getName());
-                        channelConfiguration.set("subscribers", channel.getSubscribers());
-                        channelConfiguration.set("videos", channel.getVideos());
-                        channelConfiguration.set("total-views", channel.getTotalViews());
-                        List<Map<String, Object>> lastVideos = new ArrayList<>(channel.getLastVideos().size());
-                        for (Video lastVideo : channel.getLastVideos()) {
-                            Map<String, Object> data = new HashMap<>(4, 1.0F);
-                            data.put("id", lastVideo.getId());
-                            data.put("title", lastVideo.getTitle());
-                            data.put("description", lastVideo.getDescription());
-                            data.put("publish-time", lastVideo.getPublishTime().toEpochMilli());
-                            lastVideos.add(data);
-                        }
-                        channelConfiguration.set("last-videos", lastVideos);
-                        serviceConfiguration.set("current-rank", service.getCurrentRank().getId());
+        jsonObject.add("blacklisted-services", blacklistedServicesObject);
+
+        // Save services
+        JsonObject servicesObject = new JsonObject();
+        for (Entry<ServiceType, Service> entry : user.getServices().entrySet()) {
+            ServiceType serviceType = entry.getKey();
+            Service service = entry.getValue();
+            JsonObject serviceObject = new JsonObject();
+
+            if (serviceType == ServiceType.YOUTUBE) {
+                YouTubeService youTubeService = (YouTubeService) service;
+                serviceObject.addProperty("last-cache-time", youTubeService.getLastCacheTime().toEpochMilli());
+                serviceObject.addProperty("channel-id", youTubeService.getChannelId());
+                serviceObject.addProperty("channel-verification-key", youTubeService.getChannelVerificationKey());
+                serviceObject.addProperty("channel-verified", youTubeService.isChannelVerified());
+
+                if (youTubeService.isChannelVerified()) {
+                    Channel channel = youTubeService.getChannel();
+                    JsonObject channelObject = new JsonObject();
+                    channelObject.addProperty("name", channel.getName());
+                    channelObject.addProperty("subscribers", channel.getSubscribers());
+                    channelObject.addProperty("videos", channel.getVideos());
+                    channelObject.addProperty("total-views", channel.getTotalViews());
+
+                    JsonArray lastVideosArray = new JsonArray();
+                    for (Video lastVideo : channel.getLastVideos()) {
+                        JsonObject lastVideoObject = new JsonObject();
+                        lastVideoObject.addProperty("id", lastVideo.getId());
+                        lastVideoObject.addProperty("title", lastVideo.getTitle());
+                        lastVideoObject.addProperty("description", lastVideo.getDescription());
+                        lastVideoObject.addProperty("publish-time", lastVideo.getPublishTime().toEpochMilli());
+                        lastVideosArray.add(lastVideoObject);
                     }
-                } else {
-                    // TODO: Add saving Twitch service.
+                    channelObject.add("last-videos", lastVideosArray);
+                    serviceObject.add("channel", channelObject);
+                    serviceObject.addProperty("current-rank", youTubeService.getCurrentRank().getId());
                 }
             }
-            ConfigurationProvider.getProvider(YamlConfiguration.class).save(configuration, file);
-        } catch (IOException exception) {
-            this.plugin.debug("Could not save \"" + user.getUniqueId() + ".yml\" user file.", exception);
+            servicesObject.add(serviceType.getId(), serviceObject);
         }
+        jsonObject.add("services", servicesObject);
+        MySQL mySQL = MySQLProvider.getInstance().getConnection("youtubers");
+        mySQL.executeUpdate("INSERT INTO `youtubers`(`unique_id`, `name`, services) VALUES (?,?,?)", user.getUniqueId(), user.getName(), jsonObject.toString());
         return true;
     }
 
