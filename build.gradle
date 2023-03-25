@@ -55,5 +55,7 @@ repositories {
 dependencies {
 	implementation("com.konghq:unirest-java:2.3.11")
 	compileOnly("net.md-5:bungeecord-api:1.19-R0.1-SNAPSHOT")
-	compileOnly 'dev.arttention:libraries:3.7.2'
+	compileOnly 'dev.arttention:libraries:+'
+	compileOnly 'org.projectlombok:lombok:+'
+	annotationProcessor 'org.projectlombok:lombok:+'
 }

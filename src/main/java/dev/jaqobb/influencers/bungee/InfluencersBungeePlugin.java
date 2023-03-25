@@ -1,5 +1,6 @@
 package dev.jaqobb.influencers.bungee;
 
+import dev.arttention.libraries.api.configuration.ConfigurationLoader;
 import dev.jaqobb.influencers.api.InfluencersPlugin;
 import dev.jaqobb.influencers.api.basic.Configuration;
 import dev.jaqobb.influencers.api.basic.Messages;
@@ -8,7 +9,9 @@ import dev.jaqobb.influencers.api.user.UserRepository;
 import dev.jaqobb.influencers.bungee.basic.BungeeConfiguration;
 import dev.jaqobb.influencers.bungee.basic.BungeeMessages;
 import dev.jaqobb.influencers.bungee.command.YouTubeCommand;
+import dev.jaqobb.influencers.bungee.configuration.MySQLDefaultConfig;
 import dev.jaqobb.influencers.bungee.listener.PlayerListener;
+import dev.jaqobb.influencers.bungee.provider.MySQLProvider;
 import dev.jaqobb.influencers.bungee.task.UsersUpdateTask;
 import dev.jaqobb.influencers.bungee.user.BungeeUserRepository;
 import dev.jaqobb.influencers.bungee.util.ColorHelper;
@@ -16,17 +19,24 @@ import dev.jaqobb.influencers.bungee.util.ColorHelper;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 
+import lombok.Getter;
+import lombok.SneakyThrows;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.plugin.Plugin;
 
+@Getter
 public class InfluencersBungeePlugin extends Plugin implements InfluencersPlugin {
 
     private Configuration configuration;
     private Messages messages;
+    private MySQLDefaultConfig mySQLConfig;
+    private ConfigurationLoader configurationLoader;
     private UserRepository userRepository;
 
     @Override
     public void onLoad() {
+        this.configurationLoader = new ConfigurationLoader();
+        this.mySQLConfig = configurationLoader.getConfiguration(MySQLDefaultConfig.class);
         this.configuration = new BungeeConfiguration(this);
         if (this.configuration.isYouTubeEnabled()) {
             if (this.configuration.getYouTubeAPIKey() == null || this.configuration.getYouTubeAPIKey().isEmpty()) {
@@ -58,6 +68,7 @@ public class InfluencersBungeePlugin extends Plugin implements InfluencersPlugin
         this.userRepository.loadAll();
     }
 
+    @SneakyThrows
     @Override
     public void onEnable() {
         this.debug("Registering commands...");
@@ -66,6 +77,7 @@ public class InfluencersBungeePlugin extends Plugin implements InfluencersPlugin
         this.getProxy().getPluginManager().registerListener(this, new PlayerListener(this));
         this.debug("Starting tasks...");
         this.getProxy().getScheduler().schedule(this, new UsersUpdateTask(this), this.configuration.getUsersUpdateDelay(), this.configuration.getUsersUpdatePeriod(), TimeUnit.MILLISECONDS);
+        openSQLConnections();
     }
 
     @Override
@@ -96,6 +108,12 @@ public class InfluencersBungeePlugin extends Plugin implements InfluencersPlugin
             this.getLogger().log(Level.INFO, message);
         }
     }
+
+    private void openSQLConnections() {
+        new MySQLProvider(mySQLConfig);
+        MySQLProvider.getInstance().connect("youtubers");
+    }
+
 
     @Override
     public void debug(String message, Exception exception) {
