@@ -2,8 +2,6 @@ package dev.arttention.influencers.bungee.user;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import dev.arttention.influencers.bungee.provider.MySQLProvider;
-import dev.arttention.libraries.api.mysql.MySQL;
 import dev.arttention.influencers.api.rank.type.YouTubeRank;
 import dev.arttention.influencers.api.service.Service;
 import dev.arttention.influencers.api.service.ServiceType;
@@ -14,111 +12,87 @@ import dev.arttention.influencers.api.service.list.YouTubeService.Channel.Video;
 import dev.arttention.influencers.api.user.User;
 import dev.arttention.influencers.api.user.UserRepository;
 import dev.arttention.influencers.bungee.InfluencersBungeePlugin;
-
-import java.io.File;
-import java.io.IOException;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.EnumMap;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.UUID;
-
+import dev.arttention.influencers.bungee.provider.MySQLProvider;
+import dev.arttention.libraries.api.mysql.MySQL;
 import net.md_5.bungee.api.ProxyServer;
-import net.md_5.bungee.config.Configuration;
-import net.md_5.bungee.config.ConfigurationProvider;
-import net.md_5.bungee.config.YamlConfiguration;
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.sql.SQLException;
+import java.time.Instant;
+import java.util.*;
+import java.util.Map.Entry;
 
 public class BungeeUserRepository extends UserRepository {
 
-    private InfluencersBungeePlugin plugin;
-    private File directory;
+    private final InfluencersBungeePlugin plugin;
 
     public BungeeUserRepository(InfluencersBungeePlugin plugin) {
         super(plugin);
         this.plugin = plugin;
-        this.directory = new File(this.plugin.getDataFolder(), "users");
-        if (!this.directory.exists() && !this.directory.mkdirs()) {
-            throw new RuntimeException("Could not create users directory");
-        }
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public void loadAll() {
         this.plugin.debug("Loading all users...");
-        for (File file : this.directory.listFiles()) {
-            String fileName = file.getName();
-            int dotIndex = fileName.lastIndexOf('.');
-            String fileNameWithoutExtension = dotIndex == -1 ? fileName : fileName.substring(0, dotIndex);
-            String fileExtension = dotIndex == -1 ? "" : fileName.substring(dotIndex + 1);
-            if (!fileExtension.equals("yml")) {
-                continue;
-            }
-            UUID uniqueId;
+
+        MySQL mySQL = MySQLProvider.getInstance().getConnection("youtubermanager");
+        mySQL.executeQuery("SELECT * FROM `youtubers` ", resultSet -> {
             try {
-                uniqueId = UUID.fromString(fileNameWithoutExtension);
-            } catch (IllegalArgumentException exception) {
-                this.plugin.debug("Could not parse \"" + fileNameWithoutExtension + "\" user file name to UUID.");
-                continue;
-            }
-            try {
-                Configuration configuration = ConfigurationProvider.getProvider(YamlConfiguration.class).load(file);
-                String name = configuration.getString("name");
-                Set<ServiceType> blacklistedServices = EnumSet.noneOf(ServiceType.class);
-                for (String key : configuration.getSection("blacklisted-services").getKeys()) {
-                    if (configuration.getSection("blacklisted-services").getBoolean(key)) {
-                        blacklistedServices.add(ServiceType.LIST.value(key));
+                while (resultSet.next()) {
+                    String jsonString = resultSet.getString("services");
+                    JSONObject jsonObject = new JSONObject(jsonString);
+                    String name = jsonObject.getString("name");
+                    JSONObject blacklistedServices = jsonObject.getJSONObject("blacklisted-services");
+                    boolean youtubeBlacklisted = blacklistedServices.getBoolean("youtube");
+                    boolean twitchBlacklisted = blacklistedServices.getBoolean("twitch");
+                    Set<ServiceType> blacklistedServiceTypes = EnumSet.noneOf(ServiceType.class);
+                    if (youtubeBlacklisted) {
+                        blacklistedServiceTypes.add(ServiceType.YOUTUBE);
                     }
-                }
-                Map<ServiceType, Service> services = new EnumMap<>(ServiceType.class);
-                for (String key : configuration.getSection("services").getKeys()) {
-                    Configuration serviceConfiguration = configuration.getSection("services").getSection(key);
-                    ServiceType serviceType = ServiceType.LIST.value(key);
-                    if (serviceType == ServiceType.YOUTUBE) {
-                        Instant lastCacheTime = Instant.ofEpochMilli(serviceConfiguration.getLong("last-cache-time"));
-                        String channelId = serviceConfiguration.getString("channel-id");
-                        String channelVerificationKey = serviceConfiguration.getString("channel-verification-key");
-                        boolean channelVerified = serviceConfiguration.getBoolean("channel-verified");
+                    if (twitchBlacklisted) {
+                        // TODO: Add Twitch service type to ServiceType enum.
+                    }
+                    JSONObject services = jsonObject.getJSONObject("services");
+                    Map<ServiceType, Service> serviceMap = new EnumMap<>(ServiceType.class);
+                    if (services.has("youtube")) {
+                        JSONObject youtubeJson = services.getJSONObject("youtube");
+                        Instant lastCacheTime = Instant.ofEpochMilli(youtubeJson.getLong("last-cache-time"));
+                        String channelId = youtubeJson.getString("channel-id");
+                        String channelVerificationKey = youtubeJson.getString("channel-verification-key");
+                        boolean channelVerified = youtubeJson.getBoolean("channel-verified");
                         Channel channel = null;
                         YouTubeRank currentRank = null;
                         if (channelVerified) {
-                            Configuration channelConfiguration = serviceConfiguration.getSection("channel");
-                            String channelName = channelConfiguration.getString("name");
-                            long channelSubscribers = channelConfiguration.getLong("subscribers");
-                            long channelVideos = channelConfiguration.getLong("videos");
-                            long channelTotalViews = channelConfiguration.getLong("total-views");
+                            JSONObject channelJson = youtubeJson.getJSONObject("channel");
+                            String channelName = channelJson.getString("name");
+                            long channelSubscribers = channelJson.getLong("subscribers");
+                            long channelVideos = channelJson.getLong("videos");
+                            long channelTotalViews = channelJson.getLong("total-views");
                             List<Video> channelLastVideos = new ArrayList<>(5);
-                            for (Object lastVideo : channelConfiguration.getList("last-videos")) {
-                                Map<String, Object> data = (Map<String, Object>) lastVideo;
-                                String id = (String) data.get("id");
-                                String title = (String) data.get("title");
-                                String description = (String) data.get("description");
-                                Instant publishTime = Instant.ofEpochMilli((long) data.get("publish-time"));
+                            JSONArray lastVideosJsonArray = channelJson.getJSONArray("last-videos");
+                            for (int i = 0; i < lastVideosJsonArray.length(); i++) {
+                                JSONObject videoJson = lastVideosJsonArray.getJSONObject(i);
+                                String id = videoJson.getString("id");
+                                String title = videoJson.getString("title");
+                                String description = videoJson.getString("description");
+                                Instant publishTime = Instant.ofEpochMilli(videoJson.getLong("publish-time"));
                                 channelLastVideos.add(new Video(id, title, description, publishTime));
                             }
                             channel = new Channel(channelName, channelSubscribers, channelVideos, channelTotalViews, channelLastVideos);
-                            currentRank = this.plugin.getConfiguration().getYouTubeRank(serviceConfiguration.getString("current-rank"));
+                            currentRank = this.plugin.getConfiguration().getYouTubeRank(youtubeJson.getString("current-rank"));
                         }
-                        services.put(ServiceType.YOUTUBE, new YouTubeService(lastCacheTime, name, channelId, channelVerificationKey, channelVerified, channel, currentRank));
+                        serviceMap.put(ServiceType.YOUTUBE, new YouTubeService(lastCacheTime, name, channelId, channelVerificationKey, channelVerified, channel, currentRank));
                     } else {
                         // TODO: Add loading Twitch service.
                     }
+                    this.add(new User(UUID.randomUUID(), name, blacklistedServiceTypes, serviceMap, Instant.now()));
                 }
-                Instant createdAt;
-                if (configuration.contains("created-at")) {
-                    createdAt = Instant.ofEpochMilli(configuration.getLong("created-at"));
-                } else {
-                    createdAt = Instant.now();
-                }
-                this.add(new User(uniqueId, name, blacklistedServices, services, createdAt));
-            } catch (IOException exception) {
-                this.plugin.debug("Could not load \"" + fileName + "\" user file.", exception);
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
             }
-        }
+
+        });
     }
 
     @Override
