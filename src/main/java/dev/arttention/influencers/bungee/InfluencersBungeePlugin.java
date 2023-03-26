@@ -35,6 +35,8 @@ public class InfluencersBungeePlugin extends Plugin implements InfluencersPlugin
 
     @Override
     public void onLoad() {
+        this.configurationLoader = new ConfigurationLoader();
+        this.mySQLConfig = configurationLoader.getConfiguration(MySQLDefaultConfig.class);
         this.configuration = new BungeeConfiguration(this);
         if (this.configuration.isYouTubeEnabled()) {
             if (this.configuration.getYouTubeAPIKey() == null || this.configuration.getYouTubeAPIKey().isEmpty()) {
@@ -62,22 +64,20 @@ public class InfluencersBungeePlugin extends Plugin implements InfluencersPlugin
             }
         }
         this.messages = new BungeeMessages(this);
-        this.userRepository = new BungeeUserRepository(this);
-        this.userRepository.loadAll();
-        this.configurationLoader = new ConfigurationLoader();
-        this.mySQLConfig = configurationLoader.getConfiguration(MySQLDefaultConfig.class);
     }
 
     @SneakyThrows
     @Override
     public void onEnable() {
+        openSQLConnections();
         this.debug("Registering commands...");
         this.getProxy().getPluginManager().registerCommand(this, new YouTubeCommand(this));
         this.debug("Registering listeners...");
         this.getProxy().getPluginManager().registerListener(this, new PlayerListener(this));
         this.debug("Starting tasks...");
         this.getProxy().getScheduler().schedule(this, new UsersUpdateTask(this), this.configuration.getUsersUpdateDelay(), this.configuration.getUsersUpdatePeriod(), TimeUnit.MILLISECONDS);
-        openSQLConnections();
+        this.userRepository = new BungeeUserRepository(this);
+        this.userRepository.loadAll();
     }
 
     @Override

@@ -37,22 +37,12 @@ public class BungeeUserRepository extends UserRepository {
         this.plugin.debug("Loading all users...");
 
         MySQL mySQL = MySQLProvider.getInstance().getConnection("youtubermanager");
-        mySQL.executeQuery("SELECT * FROM `youtubers` ", resultSet -> {
+        mySQL.executeQuery("SELECT * FROM `youtubers`", resultSet -> {
             try {
                 while (resultSet.next()) {
                     String jsonString = resultSet.getString("services");
                     JSONObject jsonObject = new JSONObject(jsonString);
                     String name = jsonObject.getString("name");
-                    JSONObject blacklistedServices = jsonObject.getJSONObject("blacklisted-services");
-                    boolean youtubeBlacklisted = blacklistedServices.getBoolean("youtube");
-                    boolean twitchBlacklisted = blacklistedServices.getBoolean("twitch");
-                    Set<ServiceType> blacklistedServiceTypes = EnumSet.noneOf(ServiceType.class);
-                    if (youtubeBlacklisted) {
-                        blacklistedServiceTypes.add(ServiceType.YOUTUBE);
-                    }
-                    if (twitchBlacklisted) {
-                        // TODO: Add Twitch service type to ServiceType enum.
-                    }
                     JSONObject services = jsonObject.getJSONObject("services");
                     Map<ServiceType, Service> serviceMap = new EnumMap<>(ServiceType.class);
                     if (services.has("youtube")) {
@@ -86,9 +76,9 @@ public class BungeeUserRepository extends UserRepository {
                     } else {
                         // TODO: Add loading Twitch service.
                     }
-                    this.add(new User(UUID.randomUUID(), name, blacklistedServiceTypes, serviceMap, Instant.now()));
+                    this.add(new User(UUID.randomUUID(), name, EnumSet.noneOf(ServiceType.class), serviceMap, Instant.now()));
                 }
-            } catch (SQLException e) {
+            } catch (Exception e) {
                 throw new RuntimeException(e);
             }
 
