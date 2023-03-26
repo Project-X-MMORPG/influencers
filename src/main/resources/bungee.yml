@@ -1,0 +1,7 @@
+name: BungeeCore
+main: dev.arttention.influencers.bungee.InfluencersBungeePlugin
+version: 1.0.1
+author: Domisiding
+depends:
+  - Localize
+  - Libraries

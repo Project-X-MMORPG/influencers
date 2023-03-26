@@ -1,7 +1,6 @@
 plugins {
 	id 'java'
 	id 'com.github.johnrengelman.shadow' version '7.0.0'
-	id 'net.minecrell.plugin-yml.bungee' version "0.3.0"
 }
 
 plugins.apply("java-library")
@@ -9,7 +8,6 @@ plugins.apply("com.github.johnrengelman.shadow")
 
 group = "dev.jaqobb"
 version = "1.0.6"
-description = "Minecraft plugin that allows players to link their YouTube accounts and receive rewards based on their influence"
 
 java {
 	toolchain {
@@ -26,13 +24,6 @@ tasks {
 		relocate("org.apache.commons.logging", "dev.jaqobb.influencers.api.library.org.apache.commons.logging")
 		relocate("org.apache.http", "dev.jaqobb.influencers.api.library.org.apache.http")
 		relocate("org.json", "dev.jaqobb.influencers.api.library.org.json")
-	}
-	bungee {
-		name = project.name
-		main = "${project.group}.influencers.bungee.InfluencersBungeePlugin"
-		version = project.version as String
-		description = project.description
-		author = "jaqobb"
 	}
 }
 
